@@ -12,7 +12,7 @@ You need to add the repository into your composer.json file
 
 ## Usage
 
-You can use this module as any other Codeception module, by adding 'Mailtrap' to the enabled modules in your Codeception suite configurations.
+You can use this module as any other Codeception module, by adding 'Drip' to the enabled modules in your Codeception suite configurations.
 
 ### Add Mailtrap to your list of modules
 
@@ -28,7 +28,7 @@ modules:
     config:
         Drip:
             api_key: '%DRIP_API_KEY%'
-            ccount_id: '%DRIP_ACCOUNT_ID%'
+            account_id: '%DRIP_ACCOUNT_ID%'
  ```     
  
 Update Codeception build
