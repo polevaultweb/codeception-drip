@@ -38,7 +38,7 @@ class Drip extends Module {
 		return $body['subscribers'][0];
 	}
 
-	public function getActiveCampaignsForSubscriber( $email ) {
+	public function getCampaignsForSubscriber( $email, $status = null ) {
 		$campaigns = $this->getClient()->fetch_subscriber_campaign_subscriptions( $email );
 		if ( ! $campaigns->is_success() ) {
 			return false;
@@ -52,7 +52,7 @@ class Drip extends Module {
 
 		$campaign_ids = array();
 		foreach ( $body['campaign_subscriptions'] as $campaign ) {
-			if ( 'active' !== $campaign['status'] ) {
+			if ( $status && $status !== $campaign['status'] ) {
 				continue;
 			}
 			$campaign_ids[] = $campaign['campaign_id'];
@@ -111,8 +111,8 @@ class Drip extends Module {
 		}
 	}
 
-	public function seeCampaignsForSubscriber( $email, $campaign_ids ) {
-		$campaigns = $this->getActiveCampaignsForSubscriber( $email );
+	public function seeCampaignsForSubscriber( $email, $campaign_ids, $status = 'active' ) {
+		$campaigns = $this->getCampaignsForSubscriber( $email, $status );
 		if ( false === $campaigns ) {
 			Assert::fail( 'Subscriber not found' );
 		}
