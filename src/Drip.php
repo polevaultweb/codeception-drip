@@ -128,6 +128,21 @@ class Drip extends Module {
 		Assert::assertTrue( ! array_diff( $campaign_ids, $campaigns ) );
 	}
 
+	public function cantSeeCampaignsForSubscriber( $email, $campaign_ids, $status = 'active' ) {
+		$campaigns = $this->getCampaignsForSubscriber( $email, $status );
+		if ( false === $campaigns ) {
+			Assert::fail( 'Subscriber not found' );
+		}
+
+		if ( ! is_array( $campaign_ids ) ) {
+			$campaign_ids = array( $campaign_ids );
+		}
+
+		foreach ( $campaign_ids as $campaign_id ) {
+			Assert::assertFalse( in_array( $campaign_id, $campaigns ) );
+		}
+	}
+
 	/**
 	 * Delete a single file from the current bucket.
 	 *
