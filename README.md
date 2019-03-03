@@ -14,7 +14,7 @@ You need to add the repository into your composer.json file
 
 You can use this module as any other Codeception module, by adding 'Drip' to the enabled modules in your Codeception suite configurations.
 
-### Add Mailtrap to your list of modules
+### Add Drip to your list of modules
 
 ```yml
 modules:
@@ -48,6 +48,8 @@ And assertions
 * seeTagsForSubscriber
 * cantSeeTagsForSubscriber
 * seeCampaignsForSubscriber
+* cantSeeCampaignsForSubscriber
+* waitForSubscriberToNotHaveTags
 
 ### Usage
 

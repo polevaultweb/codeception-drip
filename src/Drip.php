@@ -2,10 +2,9 @@
 
 namespace Codeception\Module;
 
-use Codeception\Module;
 use PHPUnit\Framework\Assert;
 
-class Drip extends Module {
+class Drip extends EmailMarketing {
 
 	/**
 	 * @var DripClient
@@ -61,10 +60,17 @@ class Drip extends Module {
 		return $campaign_ids;
 	}
 
-	public function seeCustomFieldForSubscriber( $email, $name, $value ) {
-		$current_value = $this->getSubscriberCustomField( $email, $name );
+	public function getTagsForSubscriber( $email ) {
+		$subscriber = $this->getSubscriber( $email );
+		if ( ! $subscriber ) {
+			Assert::fail( 'Subscriber not found' );
+		}
 
-		Assert::assertEquals( $current_value, $value );
+		if ( empty( $subscriber['tags'] ) ) {
+			return array();
+		}
+
+		return $subscriber['tags'];
 	}
 
 	protected function getSubscriberCustomField( $email, $field_name ) {
@@ -78,69 +84,6 @@ class Drip extends Module {
 		}
 
 		return $subscriber['custom_fields'][ $field_name ];
-	}
-
-	public function seeTagsForSubscriber( $email, $tags ) {
-		$subscriber = $this->getSubscriber( $email );
-		if ( ! $subscriber ) {
-			Assert::fail( 'Subscriber not found' );
-		}
-
-		if ( ! is_array( $tags ) ) {
-			$tags = array( $tags );
-		}
-
-		sort( $tags );
-		sort( $subscriber['tags'] );
-
-		Assert::assertTrue( ! array_diff( $tags, $subscriber['tags'] ) );
-	}
-
-	public function cantSeeTagsForSubscriber( $email, $tags ) {
-		$subscriber = $this->getSubscriber( $email );
-		if ( ! $subscriber ) {
-			Assert::fail( 'Subscriber not found' );
-		}
-
-		if ( ! is_array( $tags ) ) {
-			$tags = array( $tags );
-		}
-
-		foreach( $tags as $tag ) {
-			Assert::assertFalse( in_array( $tag, $subscriber['tags'] ) );
-		}
-	}
-
-	public function seeCampaignsForSubscriber( $email, $campaign_ids, $status = 'active' ) {
-		$campaigns = $this->getCampaignsForSubscriber( $email, $status );
-		if ( false === $campaigns ) {
-			Assert::fail( 'Subscriber not found' );
-		}
-
-		if ( ! is_array( $campaign_ids ) ) {
-			$campaign_ids = array( $campaign_ids );
-		}
-
-		sort( $campaign_ids );
-		sort( $campaigns );
-
-
-		Assert::assertTrue( ! array_diff( $campaign_ids, $campaigns ) );
-	}
-
-	public function cantSeeCampaignsForSubscriber( $email, $campaign_ids, $status = 'active' ) {
-		$campaigns = $this->getCampaignsForSubscriber( $email, $status );
-		if ( false === $campaigns ) {
-			Assert::fail( 'Subscriber not found' );
-		}
-
-		if ( ! is_array( $campaign_ids ) ) {
-			$campaign_ids = array( $campaign_ids );
-		}
-
-		foreach ( $campaign_ids as $campaign_id ) {
-			Assert::assertFalse( in_array( $campaign_id, $campaigns ) );
-		}
 	}
 
 	/**
@@ -160,54 +103,5 @@ class Drip extends Module {
 		if ( ! $result->is_success() ) {
 			Assert::fail( $result->get_http_message() );
 		}
-	}
-
-	/**
-	 *
-	 * @param int $timeout_in_second
-	 * @param int $interval_in_millisecond
-	 *
-	 * @return DripWait
-	 */
-	protected function wait( $timeout_in_second = 30, $interval_in_millisecond = 250 ) {
-		return new DripWait( $this, $timeout_in_second, $interval_in_millisecond );
-	}
-
-	/**
-	 * Wait until an email has been received with specific text in the text body.
-	 *
-	 * @param string $subject
-	 * @param int    $timeout
-	 *
-	 * @throws \Exception
-	 */
-	public function waitForSubscriberToNotHaveTags( $email, $tags, $timeout = 5 ) {
-		if ( ! is_array( $tags ) ) {
-			$tags = array( $tags );
-		}
-		$condition = function () use ( $email, $tags ) {
-			$subscriber = $this->getSubscriber( $email );
-			if ( ! $subscriber ) {
-				return false;
-			}
-
-			$count  = 0;
-			foreach ( $tags as $tag ) {
-				$constraint = Assert::isFalse();
-				if ( $constraint->evaluate( in_array( $tag, $subscriber['tags'] ), '', true ) ) {
-					$count ++;
-				}
-			}
-
-			if ( $count === count( $tags ) ) {
-				return true;
-			}
-
-			return false;
-		};
-
-		$message = sprintf( 'Waited for %d secs but the subscriber still has one or more of the tags %s', $timeout, implode( ',', $tags ) );
-
-		$this->wait( $timeout )->until( $condition, $message );
 	}
 }
